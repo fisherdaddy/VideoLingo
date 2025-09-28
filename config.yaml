@@ -12,8 +12,8 @@ display_language: "zh-CN"
 # API settings
 api:
   key: 'your-api-key'
-  base_url: 'https://yunwu.ai'
-  model: 'gpt-4.1-2025-04-14'
+  base_url: 'https://openrouter.ai/api/v1'
+  model: 'google/gemini-2.5-flash-lite'
   llm_support_json: false
 # *Number of LLM multi-threaded accesses, set to 1 if using local LLM
 max_workers: 4
@@ -37,6 +37,18 @@ whisper:
   # ElevenLabs API key (experimental)
   elevenlabs_api_key: 'your_elevenlabs_api_key'
 
+  # *ASR segmentation settings (advanced)
+  segment:
+    # *Max seconds per chunk for local runtime (default ~20 min)
+    max_seconds_local: 1200
+    # *Max seconds per chunk for cloud runtime (default ~10 min)
+    max_seconds_cloud: 600
+    # *Seconds around boundary to search for silence
+    silence_window: 30
+    # *Hard bounds for safety
+    min_seconds: 120
+    max_seconds: 1800
+
 # Whether to burn subtitles into the video
 burn_subtitles: true
 
@@ -50,6 +62,14 @@ youtube:
 
 # *Default resolution for downloading YouTube videos [360, 1080, best]
 ytb_resolution: '1080'
+
+# *YouTube cookies for authenticated downloads (leave blank to skip)
+ytb_cookies:
+  cookiefile: ''
+  browser: 'chrome'
+  profile: ''
+  use_keyring: true  # reserved for future use
+  container: ''       # reserved for future use
 
 subtitle:
   # *Maximum length of each subtitle line in characters

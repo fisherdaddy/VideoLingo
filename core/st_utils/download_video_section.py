@@ -8,6 +8,7 @@ import streamlit as st
 from core._1_ytdlp import download_video_ytdlp, find_video_files
 from core.utils import *
 from translations.translations import translate as t
+from yt_dlp.utils import DownloadError
 
 OUTPUT_DIR = "output"
 
@@ -41,9 +42,21 @@ def download_video_section():
                 res = res_dict[res_display]
             if st.button(t("Download Video"), key="download_button", use_container_width=True):
                 if url:
+                    did_download = False
                     with st.spinner("Downloading video..."):
-                        download_video_ytdlp(url, resolution=res)
-                    st.rerun()
+                        try:
+                            download_video_ytdlp(url, resolution=res)
+                        except DownloadError as err:
+                            st.error(
+                                "YouTube blocked the download. Export your cookies or configure the `ytb_cookies` section in `config.yaml`, then retry.\n\n"
+                                + str(err)
+                            )
+                        except Exception as err:
+                            st.error(f"Download failed due to an unexpected error: {err}")
+                        else:
+                            did_download = True
+                    if did_download:
+                        st.rerun()
 
             uploaded_file = st.file_uploader(t("Or upload video"), type=load_key("allowed_video_formats") + load_key("allowed_audio_formats"))
             if uploaded_file:

@@ -25,12 +25,33 @@ def update_ytdlp():
 
 def download_video_ytdlp(url, save_path='output', resolution='1080'):
     os.makedirs(save_path, exist_ok=True)
+
+    def _get_optional_config(path):
+        try:
+            value = load_key(path)
+        except KeyError:
+            return None
+        if isinstance(value, str):
+            value = value.strip()
+            if not value:
+                return None
+        return value
+
     ydl_opts = {
         'format': 'bestvideo+bestaudio/best' if resolution == 'best' else f'bestvideo[height<={resolution}]+bestaudio/best[height<={resolution}]',
         'outtmpl': f'{save_path}/%(title)s.%(ext)s',
         'noplaylist': True,
         'writethumbnail': True,
-        'postprocessors': [{'key': 'FFmpegThumbnailsConvertor', 'format': 'jpg'}],
+        'postprocessors': [{
+            'key': 'FFmpegThumbnailsConvertor',
+            'format': 'jpg',
+        }],
+        'extractor_args': {
+            'youtube': {
+                # Try a couple of player clients; TV clients trigger fewer bot checks currently
+                'player_client': ['tv_embedded', 'web'],
+            }
+        },
     }
 
     # Read Youtube Cookie File
@@ -40,6 +61,32 @@ def download_video_ytdlp(url, save_path='output', resolution='1080'):
 
     # Get YoutubeDL class after updating
     YoutubeDL = update_ytdlp()
+
+    cookiefile = _get_optional_config('ytb_cookies.cookiefile')
+    if cookiefile:
+        expanded_cookiefile = os.path.abspath(os.path.expanduser(cookiefile))
+        if not os.path.exists(expanded_cookiefile):
+            print(f"Warning: Cookie file not found at {expanded_cookiefile}. Continuing without it.")
+        else:
+            ydl_opts['cookiefile'] = expanded_cookiefile
+
+    browser = _get_optional_config('ytb_cookies.browser')
+    if browser:
+        profile = _get_optional_config('ytb_cookies.profile')
+        cookies_args = [browser]
+        if profile:
+            cookies_args.append(profile)
+        ydl_opts['cookiesfrombrowser'] = tuple(cookies_args)
+
+    # Update yt-dlp to avoid download failure due to API changes
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "yt-dlp"])
+    except subprocess.CalledProcessError as e:
+        print(f"Warning: Failed to update yt-dlp: {e}")
+    # Reload yt-dlp
+    if 'yt_dlp' in sys.modules:
+        del sys.modules['yt_dlp']
+    from yt_dlp import YoutubeDL
     with YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
     

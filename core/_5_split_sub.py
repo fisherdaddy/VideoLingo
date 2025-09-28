@@ -100,13 +100,31 @@ def split_for_sub_main():
     src = df['Source'].tolist()
     trans = df['Translation'].tolist()
     
+    # Keep track of original data for remerged file
+    original_src = src.copy()
+    original_trans = trans.copy()
+    
     subtitle_set = load_key("subtitle")
     MAX_SUB_LENGTH = subtitle_set["max_length"]
     TARGET_SUB_MULTIPLIER = subtitle_set["target_multiplier"]
     
-    for attempt in range(3):  # 多次切割
+    # Track remerged data for each iteration
+    final_remerged = original_trans.copy()
+    
+    for attempt in range(3):  # 使用固定的3次重试
         console.print(Panel(f"🔄 Split attempt {attempt + 1}", expand=False))
+        
+        # Debug: print lengths before split
+        console.print(f"[yellow]Debug: src length={len(src)}, trans length={len(trans)}[/yellow]")
+        
         split_src, split_trans, remerged = split_align_subs(src.copy(), trans)
+        
+        # Debug: print lengths after split
+        console.print(f"[yellow]Debug: split_src length={len(split_src)}, split_trans length={len(split_trans)}, remerged length={len(remerged)}[/yellow]")
+        
+        # Only update final_remerged in the first iteration (when we still have original structure)
+        if attempt == 0:
+            final_remerged = remerged.copy()
         
         # 检查是否所有字幕都符合长度要求
         if all(len(src) <= MAX_SUB_LENGTH for src in split_src) and \
@@ -124,6 +142,12 @@ def split_for_sub_main():
     
     pd.DataFrame({'Source': split_src, 'Translation': split_trans}).to_excel(_5_SPLIT_SUB, index=False)
     pd.DataFrame({'Source': src, 'Translation': remerged}).to_excel(_5_REMERGED, index=False)
+
+    # Debug: print final lengths
+    console.print(f"[yellow]Debug: original_src length={len(original_src)}, final_remerged length={len(final_remerged)}[/yellow]")
+
+    pd.DataFrame({'Source': split_src, 'Translation': split_trans}).to_excel(OUTPUT_SPLIT_FILE, index=False)
+    pd.DataFrame({'Source': original_src, 'Translation': final_remerged}).to_excel(OUTPUT_REMERGED_FILE, index=False)
 
 if __name__ == '__main__':
     split_for_sub_main()

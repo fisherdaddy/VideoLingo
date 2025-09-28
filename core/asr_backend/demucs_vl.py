@@ -11,6 +11,14 @@ from demucs.apply import BagOfModels
 import gc
 from core.utils.models import *
 
+# Reduce torchaudio deprecation noise and prefer backend dispatcher
+os.environ.setdefault("TORCHAUDIO_USE_BACKEND_DISPATCHER", "1")
+
+AUDIO_DIR = "output/audio"
+RAW_AUDIO_FILE = os.path.join(AUDIO_DIR, "raw.mp3")
+BACKGROUND_AUDIO_FILE = os.path.join(AUDIO_DIR, "background.mp3")
+VOCAL_AUDIO_FILE = os.path.join(AUDIO_DIR, "vocal.mp3")
+
 class PreloadedSeparator(Separator):
     def __init__(self, model: BagOfModels, shifts: int = 1, overlap: float = 0.25,
                  split: bool = True, segment: Optional[int] = None, jobs: int = 0):
@@ -29,7 +37,8 @@ def demucs_audio():
     
     console.print("🤖 Loading <htdemucs> model...")
     model = get_model('htdemucs')
-    separator = PreloadedSeparator(model=model, shifts=1, overlap=0.25)
+    # Use smaller segments and single job to reduce RAM usage on long audios
+    separator = PreloadedSeparator(model=model, shifts=1, overlap=0.25, segment=60, jobs=1)
     
     console.print("🎵 Separating audio...")
     _, outputs = separator.separate_audio_file(_RAW_AUDIO_FILE)

@@ -2,6 +2,9 @@ import streamlit as st
 import os, sys
 from core.st_utils.imports_and_utils import *
 from core import *
+# Reduce torchaudio deprecation warnings in logs
+os.environ.setdefault("TORCHAUDIO_USE_BACKEND_DISPATCHER", "1")
+from core.utils.config_utils import load_key
 
 # SET PATH
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -12,6 +15,8 @@ st.set_page_config(page_title="VideoLingo", page_icon="docs/logo.svg")
 
 SUB_VIDEO = "output/output_sub.mp4"
 DUB_VIDEO = "output/output_dub.mp4"
+ASR_TIMELINE_EXCEL = "output/log/cleaned_chunks.xlsx"
+ASR_SRT_PATH = "output/asr_only.srt"
 
 def text_processing_section():
     st.header(t("b. Translate and Generate Subtitles"))
@@ -105,6 +110,49 @@ def process_audio():
     st.success(t("Audio processing complete! 🎇"))
     st.balloons()
 
+def asr_only_section():
+    st.header(t("a. 仅进行 ASR 识别"))
+    with st.container(border=True):
+        st.markdown(t("仅对原视频进行 WhisperX 识别，导出标准 SRT 字幕文件；不进行分句、翻译或配音。识别完成后会显示完成标记与下载按钮。"))
+
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button(t("开始仅 ASR 识别"), key="asr_only_button_start"):
+                with st.spinner(t("正在进行语音识别，请稍候…")):
+                    step2_whisperX.transcribe(force=True)
+                st.success(t("识别完成！可下载 SRT 文件。"))
+                st.rerun()
+        with col2:
+            if st.button(t("重新执行 ASR"), key="asr_only_button_rerun"):
+                with st.spinner(t("正在重新识别，请稍候…")):
+                    step2_whisperX.transcribe(force=True)
+                st.success(t("已重新识别！可下载最新 SRT 文件。"))
+                st.rerun()
+
+        if os.path.exists(ASR_SRT_PATH):
+            with open(ASR_SRT_PATH, "rb") as f:
+                srt_bytes = f.read()
+            # 状态与统计
+            try:
+                import datetime
+                mtime = os.path.getmtime(ASR_SRT_PATH)
+                ts_str = datetime.datetime.fromtimestamp(mtime).strftime('%Y-%m-%d %H:%M:%S')
+                # 估算字幕条数（以空行分割）
+                txt = srt_bytes.decode('utf-8', errors='ignore')
+                cues = [blk for blk in txt.strip().split('\n\n') if blk.strip()]
+                st.success(t(f"ASR 已完成，共 {len(cues)} 条字幕，完成时间：{ts_str}"))
+            except Exception:
+                st.success(t("ASR 已完成，可下载 SRT 文件。"))
+
+            st.download_button(
+                label=t("下载 ASR 时间轴（.srt）"),
+                data=srt_bytes,
+                file_name="asr_timeline.srt",
+                mime="application/x-subrip",
+            )
+        else:
+            st.info(t("暂无可下载的 SRT 文件，请先执行 ASR。"))
+
 def main():
     logo_col, _ = st.columns([1,1])
     with logo_col:
@@ -117,6 +165,7 @@ def main():
         page_setting()
         st.markdown(give_star_button, unsafe_allow_html=True)
     download_video_section()
+    asr_only_section()
     text_processing_section()
     audio_processing_section()
 

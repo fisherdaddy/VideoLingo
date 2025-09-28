@@ -75,6 +75,16 @@
     "Merge full audio": "合并完整音频",
     "Merge dubbing to the video": "将配音合并到视频中",
     "Audio processing complete! 🎇": "音频处理完成! 🎇",
+    "a. 仅进行 ASR 识别": "a. 仅进行 ASR 识别",
+    "仅对原视频进行 WhisperX 识别，导出标准 SRT 字幕文件；不进行分句、翻译或配音。识别完成后会显示完成标记与下载按钮。": "仅对原视频进行 WhisperX 识别，导出标准 SRT 字幕文件；不进行分句、翻译或配音。识别完成后会显示完成标记与下载按钮。",
+    "开始仅 ASR 识别": "开始仅 ASR 识别",
+    "重新执行 ASR": "重新执行 ASR",
+    "暂无可下载的 SRT 文件，请先执行 ASR。": "暂无可下载的 SRT 文件，请先执行 ASR。",
+    "正在进行语音识别，请稍候…": "正在进行语音识别，请稍候…",
+    "识别完成！可下载 SRT 文件。": "识别完成！可下载 SRT 文件。",
+    "正在重新识别，请稍候…": "正在重新识别，请稍候…",
+    "已重新识别！可下载最新 SRT 文件。": "已重新识别！可下载最新 SRT 文件。",
+    "下载 ASR 时间轴（.srt）": "下载 ASR 时间轴（.srt）",
     "Hello, welcome to VideoLingo. If you encounter any issues, feel free to get instant answers with our Free QA Agent <a href=\"https://share.fastgpt.in/chat/share?shareId=066w11n3r9aq6879r4z0v9rh\" target=\"_blank\">here</a>! You can also try out our SaaS website at <a href=\"https://videolingo.io\" target=\"_blank\">videolingo.io</a> for free!": "欢迎来到VideoLingo。如果遇到任何问题，随时可以通过我们的免费问答助手 <a href=\"https://share.fastgpt.in/chat/share?shareId=066w11n3r9aq6879r4z0v9rh\" target=\"_blank\">here</a> 获取即时解答！还可以免费试用我们的SaaS网站 <a href=\"https://videolingo.io\" target=\"_blank\">videolingo.io</a>！",
     "WhisperX Runtime": "WhisperX 运行环境",
     "Local runtime requires >8GB GPU, cloud runtime requires 302ai API key, elevenlabs runtime requires ElevenLabs API key": "本地运行需要>8GB显存GPU，云端运行需要302ai API密钥，elevenlabs运行需要ElevenLabs API密钥",
@@ -108,4 +118,3 @@
     "LLM JSON Format Support": "LLM JSON格式支持",
     "Enable if your LLM supports JSON mode output": "如果选用的LLM支持JSON模式输出，请启用"
 }
-
